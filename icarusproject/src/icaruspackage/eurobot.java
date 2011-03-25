@@ -1,6 +1,7 @@
 package icaruspackage;
 
 import lejos.nxt.Button;
+import lejos.nxt.ColorLightSensor;
 
 public class eurobot {
 
@@ -8,8 +9,7 @@ public class eurobot {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println("Hello World");
-		Button.waitForPress();
+ColorLightSensor cs = new ColorLightSensor(null, 0)
 	}
 
 }
