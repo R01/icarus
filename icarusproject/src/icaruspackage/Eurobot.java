@@ -6,52 +6,26 @@ import lejos.robotics.navigation.DifferentialPilot;
 import lejos.util.Timer;
 import lejos.util.TimerListener;
 
-public class Eurobot {
+abstract public class Eurobot {
 	/** Measured constants you probably shouldn't change **/
-	static final int MATCH_LENGTH = 90000; // milliseconds
-	static final float WHEEL_DIAMETER = 8.0f;
-	static final float WHEEL_BASE = 30.5f;
-	static boolean competition = false;
+	final int MATCH_LENGTH = 90000; // milliseconds
+	final float WHEEL_DIAMETER = 8.0f;
+	final float WHEEL_BASE = 30.5f;
+	boolean competition = false;
 	
 	/** Trial and error constants you can play with **/
-	static final int AVOIDANCE_THRESHOLD = 13; // cm
-	static final int speed = 15; // cm/sec
+	final int AVOIDANCE_THRESHOLD = 13; // cm
+	final int speed = 15; // cm/sec
 	
-	static DifferentialPilot pilot = new DifferentialPilot(WHEEL_DIAMETER, // cm
+	DifferentialPilot pilot = new DifferentialPilot(WHEEL_DIAMETER, // cm
 															WHEEL_BASE, // cm
 															Motor.B, Motor.C, true);
-	static TouchSensor bump = new TouchSensor(SensorPort.S3);
-	static TouchSensor pawn = new TouchSensor(SensorPort.S4);
-	static UltrasonicSensor sonic = new UltrasonicSensor(SensorPort.S1);
-	static ColorSensor light = new ColorSensor(SensorPort.S2);
+	TouchSensor bump = new TouchSensor(SensorPort.S3);
+	TouchSensor pawn = new TouchSensor(SensorPort.S4);
+	UltrasonicSensor sonic = new UltrasonicSensor(SensorPort.S1);
+	ColorSensor light = new ColorSensor(SensorPort.S2);
 
-	public static void main(String[] args) {		
-		/** More initialization ***********************/
-		pilot.setTravelSpeed(speed);
-		pilot.setRotateSpeed(speed*Math.PI*WHEEL_BASE/180.0f); // degrees/sec#
-		
-		registerStopButtonInterrupt();
-		Timer matchTimer = initMatchTimer();
-		startSonicAvoidanceThread();
-		footUp(); // Just in case!
-		
-		// wait for start signal:
-		while(light.getColorID() == Color.BLACK){competition = true;}
-		matchTimer.start();
-		
-		// wait 300ms to make sure the starting paper is clear of the colour sensor.
-		lejos.util.Delay.msDelay(300);
-		
-		// get the start colour, pass it as an argument to the main go() method
-		int color;
-		do {
-			 color = light.getColorID();
-		}while(color != Color.RED && color != Color.BLUE);
-		go2(color);
-		NXT.shutDown();
-	}
-
-	public static void registerStopButtonInterrupt(){
+	public void registerStopButtonInterrupt(){
 		SensorPort.S3.addSensorPortListener(new SensorPortListener() {
 			public void stateChanged(SensorPort port, int oldValue, int newValue){
 				if (bump.isPressed()) {
@@ -64,7 +38,7 @@ public class Eurobot {
 
 	}
 
-	public static void startSonicAvoidanceThread(){
+	public void startSonicAvoidanceThread(){
 		// Make sonar continuously measure distances
 		sonic.continuous();
 		
@@ -86,7 +60,7 @@ public class Eurobot {
 		timer.start();
 	}
 
-	public static Timer initMatchTimer(){
+	public Timer initMatchTimer(){
 		TimerListener tl = new TimerListener()
 		{		   
 			public void timedOut(){
@@ -99,205 +73,16 @@ public class Eurobot {
 		return timer;
 	}
 	
-	public static int opposite(int color) {
+	public int opposite(int color) {
 		if(color == Color.BLUE) return Color.RED;
 		else if(color == Color.RED) return Color.BLUE; 
 		else return -1;
 	}
 	
-	public static void go2(int startColor){
-		int distanceDownBoard = 0;
-		int dir = (startColor == Color.BLUE)?1:-1;
-		
-		// Move out of the starting box
-		pilot.travel(100, true);
-		while (pilot.isMoving()) {
-			if (light.getColorID() != startColor) pilot.stop();
-		}
+	abstract public void go(int startColor);
+	abstract public void initialize();
 	
-		// Turn onto the first line
-		pilot.arc(dir*20.0f,dir*90.0f);
-		
-		// Drive forwards until you find a pawn (max 3 squares)
-		pilot.reset();
-		pilot.travel(105, true);
-		while (pilot.isMoving()) {
-			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
-		}
-		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
-		//TODO Handle pawns on 1st junction
-		
-		// Move back 1 square
-		pilot.rotate(180); 
-		pilot.travel(35);
-		pilot.travel(-35);
-		pilot.rotate(-180);
-		
-		// Find next pawn
-		pilot.reset();
-		pilot.travel(105-distanceDownBoard, true);
-		while (pilot.isMoving()) {
-			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
-		}
-		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
-		
-		// Place pawn in protected area
-		pilot.rotate(dir*90);
-		pilot.travel(15);
-		pilot.rotate(dir*-90);
-		pilot.travel(153-distanceDownBoard);
-		
-		// Return to line
-		pilot.travel(distanceDownBoard-150);
-		pilot.rotate(dir*90);
-		pilot.travel(-15);
-		pilot.rotate(dir*90);
-		
-		pilot.reset();
-		
-		// Find next pawn
-		pilot.reset();
-		pilot.travel(105, true);
-		while (pilot.isMoving()) {
-			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
-		}
-		
-		distanceDownBoard -= pilot.getMovement().getDistanceTraveled();
-		
-		pilot.travel(distanceDownBoard + 22.0f);	
-		pilot.rotate(-90*dir);
-		pilot.travel(60, true);
-
-		// Go past black
-		int n = 0;
-		do {
-			if(light.getColorID() == Color.BLACK) ++n;
-			else n = 0;
-			lejos.util.Delay.msDelay(100);
-		} while(n < 2 && pilot.isMoving());
-		
-		pilot.stop();
-			
-		// Go a little bit further
-		if(competition) {
-			pilot.travel(12);
-		} else {
-			pilot.travel(5);
-		}
-		
-		footDown();
-		
-		if(!competition) {
-			lejos.util.Delay.msDelay(4000);
-			footUp();
-			pilot.setTravelSpeed(speed);
-			pilot.rotate(180);
-		} else {
-			NXT.shutDown();
-		}
-		
-		// move forward to 1st position
-		// arc +90 R150 (on one wheel)
-		// if pawn detected {
-		// 		rotate +180
-		//		move forward 150mm (with pawn)
-		//		rotate -90
-		//		move forward 350mm (with pawn)
-		//		move backward 350mm
-		//		rotate -90
-		// } else {
-		//		move forward X to first pawn (max 3 squares)
-		//		rotate +180
-		//		move forward 350mm (with pawn)
-		//		move backward 350mm
-		//		rotate +180
-		// }
-		// move forward to 2nd pawn (max ... squares)
-		// rotate +90
-		// move forward 150mm (with pawn)
-		// rotate -90
-		// move forward to safe square (with pawn) (2nd pawn is now in place)
-		// move backward 450mm
-		// rotate -90
-		// move forward 500mm
-		// if no pawn detected {
-		//		rotate -90
-		//		move forward X until we hit a pawn (max 3 squares)
-		//		rotate +180
-		//		move forward X+50 (with pawn)
-		//		rotate -90
-		// } else {
-		//		rotate 90
-		//		move forward 50mm
-		//		rotate -90
-		// }
-		// arc +135 R300 (with pawn) (3rd pawn is now in place)
-		// arc -135 R300 in reverse
-		// move 350mm backward
-		// rotate -90
-		// move forward 1200mm
-		// rotate -90
-		// move forward 600mm (1st pawn is now in place
-		// lift up!
-	}
-	
-	
-	/*public static void go(int startColor) {
-		int turnFactor = (startColor == Color.BLUE)?1:-1;
-		
-		// Move out of the starting box
-		pilot.travel(100, true);
-		while (pilot.isMoving()) {
-			if (light.getColorID() != startColor) pilot.stop();
-		}
-	
-		// Turn onto the first line
-		pilot.arc(turnFactor*20.0f,turnFactor*90.0f);
-		
-		// Drive forwards until you find a pawn
-		pilot.travel(200, true);
-		while (pilot.isMoving()) {
-			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
-		}
-		// Remember how far you drove
-		float travel2 = pilot.getMovement().getDistanceTraveled();
-
-		// Turn round and go home
-		pilot.rotate(180); 
-		pilot.travel(travel2+22.0f);
-		pilot.rotate(-90*turnFactor);
-		pilot.travel(60, true);
-
-		// Go past black
-		int n = 0;
-		do {
-			if(light.getColorID() == Color.BLACK) ++n;
-			else n = 0;
-			lejos.util.Delay.msDelay(100);
-		} while(n < 2 && pilot.isMoving());
-		
-		pilot.stop();
-			
-		// Go a little bit further
-		if(competition) {
-			pilot.travel(12);
-		} else {
-			pilot.travel(5);
-		}
-		
-		footDown();
-		
-		if(!competition) {
-			lejos.util.Delay.msDelay(4000);
-			footUp();
-			pilot.setTravelSpeed(speed);
-			pilot.rotate(180);
-		} else {
-			NXT.shutDown();
-		}
-	}*/
-
-	static void moveFoot(int distance) {
+	void moveFoot(int distance) {
 		//Initialize the motor and tell it to rotate for ages
 		Motor.A.setSpeed(400);
 		Motor.A.setStallThreshold(20, 10);
@@ -310,16 +95,15 @@ public class Eurobot {
 		Motor.A.rotate(-20); 
 	}
 	
-	static void footUp(){
+	void footUp(){
 		moveFoot(1000);
 	}
 	
-	static void footDown(){
+	void footDown(){
 		moveFoot(-1000);
 	}
 
-
-	static String getColorString(int v){
+	String getColorString(int v){
 		switch(v){
 		case Color.BLACK:
 			return "BLACK";
