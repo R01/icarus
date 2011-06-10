@@ -8,6 +8,8 @@ public class SimpleBot extends Eurobot {
 	public static void main(String[] args) {		
 		Eurobot bot = new SimpleBot();
 		bot.initialize();
+		bot.go();
+		NXT.shutDown();
 	}
 	
 	@Override
@@ -26,19 +28,16 @@ public class SimpleBot extends Eurobot {
 		
 		// wait 300ms to make sure the starting paper is clear of the colour sensor.
 		lejos.util.Delay.msDelay(300);
-		
-		// get the start colour, pass it as an argument to the main go() method
-		int color;
-		do {
-			 color = light.getColorID();
-		}while(color != Color.RED && color != Color.BLUE);
-		go(color);
-		NXT.shutDown();
 	}
 	
 	@Override
-	public void go(int startColor) {
-		int turnFactor = (startColor == Color.BLUE)?1:-1;
+	public void go() {
+		// get the start colour
+		int startColor;
+		do {
+			 startColor = light.getColorID();
+		}while(startColor != Color.RED && startColor != Color.BLUE);
+		int dir = (startColor == Color.BLUE)?1:-1;
 		
 		// Move out of the starting box
 		pilot.travel(100, true);
@@ -47,7 +46,7 @@ public class SimpleBot extends Eurobot {
 		}
 	
 		// Turn onto the first line
-		pilot.arc(turnFactor*20.0f,turnFactor*90.0f);
+		pilot.arc(dir*20.0f,dir*90.0f);
 		
 		// Drive forwards until you find a pawn
 		pilot.travel(200, true);
@@ -60,7 +59,7 @@ public class SimpleBot extends Eurobot {
 		// Turn round and go home
 		pilot.rotate(180); 
 		pilot.travel(travel2+22.0f);
-		pilot.rotate(-90*turnFactor);
+		pilot.rotate(-90*dir);
 		pilot.travel(60, true);
 
 		// Go past black

@@ -1,12 +1,19 @@
 package icaruspackage;
 
 import lejos.nxt.*;
-import lejos.nxt.ColorSensor.Color;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.util.Timer;
 import lejos.util.TimerListener;
 
+/**
+ * An abstract class containing wrapper methods hiding away a 
+ * lot of boring and low-level code. Extend this class and
+ * provide an initialize function along with a go function
+ * which contains the robot's tactics.
+ * 
+ */
 abstract public class Eurobot {
+	
 	/** Measured constants you probably shouldn't change **/
 	final int MATCH_LENGTH = 90000; // milliseconds
 	final float WHEEL_DIAMETER = 8.0f;
@@ -17,27 +24,44 @@ abstract public class Eurobot {
 	final int AVOIDANCE_THRESHOLD = 13; // cm
 	final int speed = 15; // cm/sec
 	
-	DifferentialPilot pilot = new DifferentialPilot(WHEEL_DIAMETER, // cm
-															WHEEL_BASE, // cm
-															Motor.B, Motor.C, true);
+	/** Robot Hardware **/
 	TouchSensor bump = new TouchSensor(SensorPort.S3);
 	TouchSensor pawn = new TouchSensor(SensorPort.S4);
 	UltrasonicSensor sonic = new UltrasonicSensor(SensorPort.S1);
 	ColorSensor light = new ColorSensor(SensorPort.S2);
+	DifferentialPilot pilot = new DifferentialPilot(WHEEL_DIAMETER, // cm
+			WHEEL_BASE, // cm
+			Motor.B, Motor.C, true);
+	
+	/**
+	 * Contains the initialization logic of the robot
+	 */
+	abstract public void initialize();
 
+	/**
+	 * Contains the tactical logic of the robot.
+	 */
+	abstract public void go();
+
+	/**
+	 * Registers an interrupt which turns the robot off when the
+	 * emergency stop button is pressed.
+	 */
 	public void registerStopButtonInterrupt(){
 		SensorPort.S3.addSensorPortListener(new SensorPortListener() {
 			public void stateChanged(SensorPort port, int oldValue, int newValue){
 				if (bump.isPressed()) {
-					// stop all motors
 					Motor.A.stop();
 					Motor.B.stop();
 					Motor.C.stop();
 					NXT.shutDown();
 				}}});	
-
 	}
 
+	/**
+	 * Starts a thread which monitors the sonar (by polling) and stops
+	 * the robot if there are any potentially dangerous obstacles.
+	 */
 	public void startSonicAvoidanceThread(){
 		// Make sonar continuously measure distances
 		sonic.continuous();
@@ -60,6 +84,12 @@ abstract public class Eurobot {
 		timer.start();
 	}
 
+	/**
+	 * Prepares a timer which turns the robot when the match's 
+	 * time limit is over. 
+	 * @return A timer which should be started at the beginning 
+	 * of the match.
+	 */
 	public Timer initMatchTimer(){
 		TimerListener tl = new TimerListener()
 		{		   
@@ -73,15 +103,25 @@ abstract public class Eurobot {
 		return timer;
 	}
 	
-	public int opposite(int color) {
-		if(color == Color.BLUE) return Color.RED;
-		else if(color == Color.RED) return Color.BLUE; 
-		else return -1;
+	/**
+	 * Place the robot's foot in the up position.
+	 */
+	void footUp(){
+		moveFoot(1000);
 	}
 	
-	abstract public void go(int startColor);
-	abstract public void initialize();
-	
+	/**
+	 * Place the robot's foot in the down position.
+	 */
+	void footDown(){
+		moveFoot(-1000);
+	}
+	 
+	/**
+	 * The foot of the robot can be moved to sit on a pawn
+	 * or to stop pawns enterring the robot.
+	 * @param distance angle to turn the foot driving motor
+	 */
 	void moveFoot(int distance) {
 		//Initialize the motor and tell it to rotate for ages
 		Motor.A.setSpeed(400);
@@ -93,28 +133,5 @@ abstract public class Eurobot {
 		
 		//Wind back a bit to relax motor
 		Motor.A.rotate(-20); 
-	}
-	
-	void footUp(){
-		moveFoot(1000);
-	}
-	
-	void footDown(){
-		moveFoot(-1000);
-	}
-
-	String getColorString(int v){
-		switch(v){
-		case Color.BLACK:
-			return "BLACK";
-		case Color.BLUE:
-			return "BLUE";
-		case Color.GREEN:
-			return "GREEN";
-		case Color.RED:
-			return "RED";
-		default:
-			return "UNKNOWN COLOR";
-		}
 	}
 }

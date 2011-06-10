@@ -8,6 +8,8 @@ public class TwoPawnBot extends Eurobot {
 	public static void main(String[] args) {		
 		Eurobot bot = new TwoPawnBot();
 		bot.initialize();
+		bot.go();
+		NXT.shutDown();
 	}
 	
 	@Override
@@ -32,14 +34,18 @@ public class TwoPawnBot extends Eurobot {
 		do {
 			 color = light.getColorID();
 		}while(color != Color.RED && color != Color.BLUE);
-		go(color);
-		NXT.shutDown();
 	}
 	
 	@Override
-	public void go(int startColor) {
-		int distanceDownBoard = 0;
+	public void go() {
+		// get the start colour
+		int startColor;
+		do {
+			 startColor = light.getColorID();
+		}while(startColor != Color.RED && startColor != Color.BLUE);
 		int dir = (startColor == Color.BLUE)?1:-1;
+		
+		int distanceDownBoard = 0;
 		
 		// Move out of the starting box
 		pilot.travel(100, true);
