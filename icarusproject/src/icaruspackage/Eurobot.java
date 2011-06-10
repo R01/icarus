@@ -19,7 +19,7 @@ public class Eurobot {
 	static ColorSensor light = new ColorSensor(SensorPort.S2);
 
 	public static void main(String[] args) {
-		Eurobot eurobot = new Eurobot();
+		// ## Initialization #######################
 		pilot = new DifferentialPilot(8.0f, 30.5f, Motor.B, Motor.C, true);
 		pilot.setTravelSpeed(speed);
 		Timer matchTimer = initMatchTimer();
@@ -39,16 +39,9 @@ public class Eurobot {
 		LCD.clearDisplay();
 		LCD.drawString(getColorString(light.getColorID()),0,0,false);
 		
-		eurobot.go(getColorString(light.getColorID()));
+		go(getColorString(light.getColorID()));
 		// clean up
 		avoidance.stop();
-		/*		for(;;){
-			int lastVal = light.getColorID();
-			while (light.getColorID() == lastVal){}
-			LCD.clearDisplay();
-			LCD.drawString(getColorString(light.getColorID()), 0, 0,true);
-		}	
-		 */
 	}
 
 	public static void initStopButton(){
@@ -96,7 +89,7 @@ public class Eurobot {
 		return timer;
 	}
 
-	public String otherColor(String thisColor){
+	public static String otherColor(String thisColor){
 		if(thisColor.equals("RED")) return "BLUE";
 		if(thisColor.equals("BLUE")) return "RED";
 		LCD.drawString("ERROR", 0, 0,true);
@@ -153,7 +146,7 @@ public class Eurobot {
 	}
 	
 	
-	public void go(String startColor) {
+	public static void go(String startColor) {
 		int turnFactor = startColor.equals("BLUE")?1:-1;
 		pilot.travel(100, true);
 		while (pilot.isMoving()) {
@@ -204,7 +197,7 @@ public class Eurobot {
 		}
 	}
 
-	void lift(int distance){
+	static void lift(int distance){
 		Motor.A.resetTachoCount();
 		if(distance>0){
 			Motor.A.backward();
