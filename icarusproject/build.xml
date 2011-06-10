@@ -1,6 +1,6 @@
-<project name="icarusproject" default="uploadandrun">
+<project name="icarusproject" default="link">
     <description>
-    	icaruspackage.eurobot build file
+    	eurobot build file
     </description>
 
   <!-- set properties for this build -->

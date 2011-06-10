@@ -7,7 +7,7 @@ import lejos.util.TimerListener;
 
 
 
-public class Eurobot {
+public class Eurobot2 {
 	static int MIN_DISTANCE = 13;
 	static int MATCH_LENGTH = 90000; // 90 seconds
 	static int speed = 400;
@@ -103,6 +103,55 @@ public class Eurobot {
 		return"";
 	}
 
+	public void go2(String startColor){
+		// *** NEW STRATEGY FOR THE FINALS ***
+		
+		// move forward to 1st position
+		// arc +90 R150 (on one wheel)
+		// if pawn detected {
+		// 		rotate +180
+		//		move forward 150mm (with pawn)
+		//		rotate -90
+		//		move forward 350mm (with pawn)
+		//		move backward 350mm
+		//		rotate -90
+		// } else {
+		//		move forward X to first pawn (max 3 squares)
+		//		rotate +180
+		//		move forward 350mm (with pawn)
+		//		move backward 350mm
+		//		rotate +180
+		// }
+		// move forward to 2nd pawn (max ... squares)
+		// rotate +90
+		// move forward 150mm (with pawn)
+		// rotate -90
+		// move forward to safe square (with pawn) (2nd pawn is now in place)
+		// move backward 450mm
+		// rotate -90
+		// move forward 500mm
+		// if no pawn detected {
+		//		rotate -90
+		//		move forward X until we hit a pawn (max 3 squares)
+		//		rotate +180
+		//		move forward X+50 (with pawn)
+		//		rotate -90
+		// } else {
+		//		rotate 90
+		//		move forward 50mm
+		//		rotate -90
+		// }
+		// arc +135 R300 (with pawn) (3rd pawn is now in place)
+		// arc -135 R300 in reverse
+		// move 350mm backward
+		// rotate -90
+		// move forward 1200mm
+		// rotate -90
+		// move forward 600mm (1st pawn is now in place
+		// lift up!
+	}
+	
+	
 	public void go(String startColor) {
 		int turnFactor = startColor.equals("BLUE")?1:-1;
 		pilot.travel(100, true);
