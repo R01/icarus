@@ -1,23 +1,22 @@
 package icaruspackage;
 
 import lejos.nxt.*;
+import lejos.nxt.ColorSensor.Color;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.util.Timer;
 import lejos.util.TimerListener;
 
-
-
 public class Eurobot {
 	static int MIN_DISTANCE = 13;
 	static int MATCH_LENGTH = 90000; // 90 seconds
-	static int speed = 400;
+	static int speed = 10;
 	static boolean competition = false;
 	static boolean obstacle = false;
 	static DifferentialPilot pilot;
 	static TouchSensor bump = new TouchSensor(SensorPort.S3);
 	static TouchSensor pawn = new TouchSensor(SensorPort.S4);
 	static UltrasonicSensor sonic = new UltrasonicSensor(SensorPort.S1);
-	static ColorSensor light = new ColorSensor(SensorPort.S2,ColorSensor.TYPE_COLORFULL);
+	static ColorSensor light = new ColorSensor(SensorPort.S2);
 
 	public static void main(String[] args) {
 		Eurobot eurobot = new Eurobot();
@@ -31,20 +30,23 @@ public class Eurobot {
 		initStopButton();
 		
 		// wait for start signal:
-		while(getColorString(light.getLightValue()).equals("BLACK")){competition = true;}
+		while(getColorString(light.getColorID()).equals("BLACK")){competition = true;}
 		// GO! start the 90 sec match timer
 		matchTimer.start();
 		// wait 300ms to make sure the starting paper is clear of the colour sensor.
 		lejos.util.Delay.msDelay(300);
 		// get the start colour, pass it as an argument to the main go() method
-		eurobot.go(getColorString(light.getLightValue()));
+		LCD.clearDisplay();
+		LCD.drawString(getColorString(light.getColorID()),0,0,false);
+		
+		eurobot.go(getColorString(light.getColorID()));
 		// clean up
 		avoidance.stop();
 		/*		for(;;){
-			int lastVal = light.getLightValue();
-			while (light.getLightValue() == lastVal){}
+			int lastVal = light.getColorID();
+			while (light.getColorID() == lastVal){}
 			LCD.clearDisplay();
-			LCD.drawString(getColorString(light.getLightValue()), 0, 0,true);
+			LCD.drawString(getColorString(light.getColorID()), 0, 0,true);
 		}	
 		 */
 	}
@@ -57,8 +59,7 @@ public class Eurobot {
 					Motor.A.stop();
 					Motor.B.stop();
 					Motor.C.stop();
-					// turn off power
-					NXT.shutDown();
+					NXT.exit(0);
 				}}});	
 
 	}
@@ -67,7 +68,7 @@ public class Eurobot {
 		TimerListener tl = new TimerListener()
 		{		   
 			public void timedOut(){
-				LCD.drawInt(light.getLightValue(),6,0,0);//NEW LINE
+				LCD.drawInt(light.getColorID(),6,0,0);//NEW LINE
 				if(!obstacle && sonic.getDistance()<MIN_DISTANCE){
 					obstacle = true;
 					pilot.setTravelSpeed(0);
@@ -87,7 +88,7 @@ public class Eurobot {
 		{		   
 			public void timedOut(){
 				// Match over: switch off...
-				NXT.shutDown();
+				NXT.exit(0);
 			}   
 		};
 		// set the timer event to fire after MATCH_LENGTH
@@ -156,37 +157,36 @@ public class Eurobot {
 		int turnFactor = startColor.equals("BLUE")?1:-1;
 		pilot.travel(100, true);
 		while (pilot.isMoving()) {
-			if (getColorString(light.getLightValue()).equals(otherColor(startColor))) pilot.stop();
+			if (getColorString(light.getColorID()).equals(otherColor(startColor))) pilot.stop();
 		}
 		
 		//pilot.rotate(90);
-		pilot.arc(turnFactor*20.0f,90.0f);
+		pilot.arc(turnFactor*20.0f,turnFactor*90.0f);
 		pilot.reset();
 		pilot.travel(200, true);
 		while (pilot.isMoving()) {
 			if (pawn.isPressed()) pilot.stop();//Found a pawn!
 		}
 		float travel2 = pilot.getMovement().getDistanceTraveled();
-		
+
+		pilot.setRotateSpeed(90.0f);
 		pilot.rotate(180); // turn round and go home
 		
-		speed = 200;
 		pilot.setTravelSpeed(speed);
 		pilot.travel(travel2+22.0f, false);
 		pilot.rotate(-90*turnFactor);
 		pilot.travel(60, true);
 		while (pilot.isMoving()) {
-			if (getColorString(light.getLightValue()).equals("BLACK")) {
+			if (getColorString(light.getColorID()).equals("BLACK")) {
 				lejos.util.Delay.msDelay(100);
-				if (getColorString(light.getLightValue()).equals("BLACK")) {
+				if (getColorString(light.getColorID()).equals("BLACK")) {
 					lejos.util.Delay.msDelay(100);
-					if (getColorString(light.getLightValue()).equals("BLACK")) {
+					if (getColorString(light.getColorID()).equals("BLACK")) {
 						pilot.stop();
 					}
 				}
 			}
 		}
-		speed = 100;
 		if(competition) {
 			pilot.travel(12, false);
 		} else {
@@ -197,10 +197,10 @@ public class Eurobot {
 		if(!competition) {
 			lejos.util.Delay.msDelay(4000);
 			lift(-500);
-			pilot.setTravelSpeed(400);
+			pilot.setTravelSpeed(speed);
 			pilot.rotate(180);
 		} else {
-			NXT.shutDown();
+			NXT.exit(0);
 		}
 	}
 
@@ -217,13 +217,13 @@ public class Eurobot {
 
 	static String getColorString(int v){
 		switch(v){
-		case 1:
+		case Color.BLACK:
 			return "BLACK";
-		case 2:
+		case Color.BLUE:
 			return "BLUE";
-		case 3:
+		case Color.GREEN:
 			return "GREEN";
-		case 5:
+		case Color.RED:
 			return "RED";
 		default:
 			return "UNKNOWN COLOR";
