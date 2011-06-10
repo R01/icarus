@@ -47,7 +47,8 @@ public class Eurobot {
 		do {
 			 color = light.getColorID();
 		}while(color != Color.RED && color != Color.BLUE);
-		go(color);
+		go2(color);
+		NXT.shutDown();
 	}
 
 	public static void registerStopButtonInterrupt(){
@@ -104,8 +105,96 @@ public class Eurobot {
 		else return -1;
 	}
 	
-	public void go2(String startColor){
-		// *** NEW STRATEGY FOR THE FINALS ***
+	public static void go2(int startColor){
+		int distanceDownBoard = 0;
+		int dir = (startColor == Color.BLUE)?1:-1;
+		
+		// Move out of the starting box
+		pilot.travel(100, true);
+		while (pilot.isMoving()) {
+			if (light.getColorID() != startColor) pilot.stop();
+		}
+	
+		// Turn onto the first line
+		pilot.arc(dir*20.0f,dir*90.0f);
+		
+		// Drive forwards until you find a pawn (max 3 squares)
+		pilot.reset();
+		pilot.travel(105, true);
+		while (pilot.isMoving()) {
+			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
+		}
+		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
+		//TODO Handle pawns on 1st junction
+		
+		// Move back 1 square
+		pilot.rotate(180); 
+		pilot.travel(35);
+		pilot.travel(-35);
+		pilot.rotate(-180);
+		
+		// Find next pawn
+		pilot.reset();
+		pilot.travel(105-distanceDownBoard, true);
+		while (pilot.isMoving()) {
+			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
+		}
+		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
+		
+		// Place pawn in protected area
+		pilot.rotate(dir*90);
+		pilot.travel(15);
+		pilot.rotate(dir*-90);
+		pilot.travel(153-distanceDownBoard);
+		
+		// Return to line
+		pilot.travel(distanceDownBoard-150);
+		pilot.rotate(dir*90);
+		pilot.travel(-15);
+		pilot.rotate(dir*90);
+		
+		pilot.reset();
+		
+		// Find next pawn
+		pilot.reset();
+		pilot.travel(105, true);
+		while (pilot.isMoving()) {
+			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
+		}
+		
+		distanceDownBoard -= pilot.getMovement().getDistanceTraveled();
+		
+		pilot.travel(distanceDownBoard + 22.0f);	
+		pilot.rotate(-90*dir);
+		pilot.travel(60, true);
+
+		// Go past black
+		int n = 0;
+		do {
+			if(light.getColorID() == Color.BLACK) ++n;
+			else n = 0;
+			lejos.util.Delay.msDelay(100);
+		} while(n < 2 && pilot.isMoving());
+		
+		pilot.stop();
+			
+		// Go a little bit further
+		if(competition) {
+			pilot.travel(12);
+		} else {
+			pilot.travel(5);
+		}
+		
+		footDown();
+		
+		if(!competition) {
+			lejos.util.Delay.msDelay(4000);
+			footUp();
+			pilot.setTravelSpeed(speed);
+			pilot.rotate(180);
+		} else {
+			NXT.shutDown();
+		}
 		
 		// move forward to 1st position
 		// arc +90 R150 (on one wheel)
@@ -153,7 +242,7 @@ public class Eurobot {
 	}
 	
 	
-	public static void go(int startColor) {
+	/*public static void go(int startColor) {
 		int turnFactor = (startColor == Color.BLUE)?1:-1;
 		
 		// Move out of the starting box
@@ -162,12 +251,8 @@ public class Eurobot {
 			if (light.getColorID() != startColor) pilot.stop();
 		}
 	
-		pilot.reset();
-	
 		// Turn onto the first line
 		pilot.arc(turnFactor*20.0f,turnFactor*90.0f);
-		
-		pilot.reset();
 		
 		// Drive forwards until you find a pawn
 		pilot.travel(200, true);
@@ -179,7 +264,7 @@ public class Eurobot {
 
 		// Turn round and go home
 		pilot.rotate(180); 
-		pilot.travel(travel2+22.0f, false);
+		pilot.travel(travel2+22.0f);
 		pilot.rotate(-90*turnFactor);
 		pilot.travel(60, true);
 
@@ -189,7 +274,9 @@ public class Eurobot {
 			if(light.getColorID() == Color.BLACK) ++n;
 			else n = 0;
 			lejos.util.Delay.msDelay(100);
-		} while(n < 3);
+		} while(n < 2 && pilot.isMoving());
+		
+		pilot.stop();
 			
 		// Go a little bit further
 		if(competition) {
@@ -208,7 +295,7 @@ public class Eurobot {
 		} else {
 			NXT.shutDown();
 		}
-	}
+	}*/
 
 	static void moveFoot(int distance) {
 		//Initialize the motor and tell it to rotate for ages
