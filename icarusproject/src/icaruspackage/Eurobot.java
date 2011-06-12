@@ -1,6 +1,7 @@
 package icaruspackage;
 
 import lejos.nxt.*;
+import lejos.nxt.addon.CompassSensor;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.util.Timer;
 import lejos.util.TimerListener;
@@ -32,6 +33,7 @@ abstract public class Eurobot {
 	DifferentialPilot pilot = new DifferentialPilot(WHEEL_DIAMETER, // cm
 			WHEEL_BASE, // cm
 			Motor.B, Motor.C, true);
+	CompassSensor compass = new CompassSensor(SensorPort.S2);
 	
 	/**
 	 * Contains the initialization logic of the robot
