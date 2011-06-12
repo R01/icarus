@@ -64,10 +64,15 @@ public class TwoPawnBot extends Eurobot {
 		}
 		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
 		//TODO Handle pawns on 1st junction
-		
+		int travelDistance = 35;
+		if (distanceDownBoard < 15){// a pawn on 1st junction found
+			lejos.nxt.Sound.beep();
+			travelDistance = 15;
+			distanceDownBoard = distanceDownBoard + 20;
+		}	
 		// Move back 1 square
 		pilot.rotate(180); 
-		pilot.travel(35);
+		pilot.travel(travelDistance);
 		pilot.travel(-35);
 		pilot.rotate(-180);
 		
@@ -83,7 +88,7 @@ public class TwoPawnBot extends Eurobot {
 		pilot.rotate(dir*90);
 		pilot.travel(15);
 		pilot.rotate(dir*-90);
-		pilot.travel(153-distanceDownBoard);
+		pilot.travel(153+10-distanceDownBoard);
 		
 		// Return to line
 		pilot.travel(distanceDownBoard-150);
