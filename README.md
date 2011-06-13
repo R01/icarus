@@ -14,9 +14,9 @@ In order to be efficient, it is recommended you have the following software:
 * Eclipse - http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/heliossr2
 * leJOS 0.9a - http://lejos.sourceforge.net/nxj-downloads.php
 * leJOS Eclipse Plugin 0.9a
-> Use Eclipse's Update manager to install it from the remote update site as follows:
-> Name: leJOS NXJ (or whatever you like)
-> URL: http://lejos.sourceforge.net/tools/eclipse/plugin/nxj/
+  > Use Eclipse's Update manager to install it from the remote update site as follows:
+  > Name: leJOS NXJ (or whatever you like)
+  > URL: http://lejos.sourceforge.net/tools/eclipse/plugin/nxj/
 
 
 Authors:
