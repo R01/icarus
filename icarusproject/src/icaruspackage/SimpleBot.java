@@ -15,7 +15,7 @@ public class SimpleBot extends Eurobot {
 	@Override
 	public void initialize() {
 		pilot.setTravelSpeed(speed);
-		pilot.setRotateSpeed(speed*Math.PI*WHEEL_BASE/180.0f); // degrees/sec#
+		pilot.setRotateSpeed(speed/(WHEEL_BASE*Math.PI)*360.0f); // degrees/sec#
 		
 		registerStopButtonInterrupt();
 		Timer matchTimer = initMatchTimer();
