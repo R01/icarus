@@ -1,0 +1,7 @@
+# Dimensions:
+
+The board's coordinates are in mm, the corner at the blue starting position is (0,0), with the x axis being along the long side of the board. Heading of 0 degrees is parallel to the x axis, +90 degrees is parallel to y axis.
+
+The robot has a wheelbase of 300mm, and the color sensor is 190mm behind the centre of rotation.
+
+For consistency, the blue starting position of robot should always be (24, 20, 0).  
