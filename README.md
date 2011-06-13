@@ -9,6 +9,7 @@ This is the Eclipse project for our robot Icarus, competing in Eurobot 2011. It 
 Software Required:
 ------------------
 In order to be efficient, it is recommended you have the following software:
+
 * Java Development Kit (JDK) - http://www.oracle.com/technetwork/java/javase/downloads/index.html
 * Eclipse - http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/heliossr2
 * leJOS 0.9a - http://lejos.sourceforge.net/nxj-downloads.php
