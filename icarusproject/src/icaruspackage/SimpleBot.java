@@ -14,8 +14,8 @@ public class SimpleBot extends Eurobot {
 	
 	@Override
 	public void initialize() {
-		pilot.setTravelSpeed(speed);
-		pilot.setRotateSpeed(speed/(WHEEL_BASE*Math.PI)*360.0f); // degrees/sec#
+		pilot.setTravelSpeed(FAST);
+		pilot.setRotateSpeed(FAST/(WHEEL_BASE*Math.PI)*360.0f); // degrees/sec#
 		
 		registerStopButtonInterrupt();
 		Timer matchTimer = initMatchTimer();
@@ -51,7 +51,7 @@ public class SimpleBot extends Eurobot {
 		// Drive forwards until you find a pawn
 		pilot.travel(200, true);
 		while (pilot.isMoving()) {
-			if (pawn.isPressed()) pilot.stop(); //Found a pawn!
+			if (pawnButton.isPressed()) pilot.stop(); //Found a pawn!
 		}
 		// Remember how far you drove
 		float travel2 = pilot.getMovement().getDistanceTraveled();
@@ -84,7 +84,7 @@ public class SimpleBot extends Eurobot {
 		if(!competition) {
 			lejos.util.Delay.msDelay(4000);
 			footUp();
-			pilot.setTravelSpeed(speed);
+			pilot.setTravelSpeed(FAST);
 			pilot.rotate(180);
 		} else {
 			NXT.shutDown();
