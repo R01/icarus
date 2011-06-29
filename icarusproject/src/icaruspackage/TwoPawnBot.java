@@ -1,8 +1,11 @@
 package icaruspackage;
 
+import java.io.File;
+
 import lejos.nxt.LCD;
 import lejos.nxt.NXT;
 import lejos.nxt.ColorSensor.Color;
+import lejos.nxt.Sound;
 import lejos.util.Timer;
 //import lejos.util.Stopwatch;
 
@@ -32,7 +35,6 @@ public class TwoPawnBot extends Eurobot {
 
 		// wait 300ms to make sure the starting paper is clear of the colour sensor.
 		lejos.util.Delay.msDelay(300);
-
 	}
 
 	@SuppressWarnings("deprecation")
@@ -43,6 +45,7 @@ public class TwoPawnBot extends Eurobot {
 		do {
 			startColor = light.getColorID();
 		}while(startColor != Color.RED && startColor != Color.BLUE);
+		marioStart();
 		if(startColor == Color.RED) {LCD.drawString("RED", 0, 1);}
 		else {LCD.drawString("BLUE", 0, 1);}
 
@@ -198,6 +201,7 @@ public class TwoPawnBot extends Eurobot {
 		}
 		pilot.stop();
 		 */
+		Sound.playSample(new File("Power Up.wav"));
 		footDown();
 
 		if(!competition) {

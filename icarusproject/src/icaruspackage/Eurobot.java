@@ -1,5 +1,7 @@
 package icaruspackage;
 
+import java.io.File;
+
 import lejos.nxt.*;
 import lejos.nxt.addon.CompassSensor;
 import lejos.nxt.addon.TouchMUX;
@@ -113,7 +115,7 @@ abstract public class Eurobot {
 				}
 			}   
 		};
-		// set this timer event to fire every 500ms
+		// set this timer event to fire every 100ms
 		Timer timer = new Timer(100,tl);	   
 		timer.start();
 	}
@@ -166,17 +168,17 @@ abstract public class Eurobot {
 	 * @param immret true for non-blocking operation
 	 */
 	public void travel(double distance, boolean immret) {
-		travel(distance, true, MIN_ACCELERATION);
+		travel(distance, immret, MIN_ACCELERATION);
+	}
+	public void travel(double distance, boolean immret, int accel) {
+		currentGoal = distance;
+		pilot.setAcceleration(accel);
+		pilot.travel(distance, true);
 		if(!immret){
 			while(pilot.isMoving() || obstacle){
 				// keep looping
 			}
 		}
-	}
-	public void travel(double distance, boolean immret, int accel) {
-		currentGoal = distance;
-		pilot.setAcceleration(accel);
-		pilot.travel(distance, immret);
 	}
 
 	public void rotate(double angle) {
@@ -189,8 +191,45 @@ abstract public class Eurobot {
 
 	public void waitForPawn(){
 		while (pilot.isMoving() || obstacle) {
-			if (pawnButton.isPressed()) stop(); //Found a pawn!
+			if (pawnButton.isPressed()) {
+				stop(); //Found a pawn!
+				lejos.nxt.Sound.playSample(new File("Coins8bit.wav"));
+			}
 		}
+	}
+	
+	public void marioStart() {
+		class MarioThread extends Thread {
+			MarioThread() {}
+			public void run() {
+				final int E = 330;
+				final int C = 261;
+				final int G = 392;
+				playTone(E, 200);
+				delay(50);
+				playTone(E, 200);
+				delay(200);
+				playTone(E, 200);
+				delay(200);
+				playTone(C, 200);
+				//delay(0);
+				playTone(E,200);
+				delay(200);
+				playTone(G, 200);
+				delay(450);
+				playTone(190,400);
+			}
+		}
+		MarioThread p = new MarioThread();
+		p.start();
+	}
+	
+	public void playTone(int freq, int duration) {
+		Sound.playTone(freq, duration);
+		delay(duration);
+	}
+	public void delay(int duration) {
+		lejos.util.Delay.msDelay(duration);
 	}
 
 
