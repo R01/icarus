@@ -123,7 +123,7 @@ public class TwoPawnBot extends Eurobot {
 			while (light.getColorID() == Color.RED)
 			{// look for colour change
 			}
-			pilot.stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
+			//pilot.stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
 			pilot.travel(-5);// move a little bit to line up with vert1
 		} else {
 			// find vert1
@@ -131,7 +131,7 @@ public class TwoPawnBot extends Eurobot {
 			while (light.getColorID() != Color.RED)
 			{// look for colour change
 			}
-			pilot.stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
+			//pilot.stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
 			pilot.travel(-10);// move a little bit to line up with vert1
 		}
 
@@ -143,9 +143,11 @@ public class TwoPawnBot extends Eurobot {
 		{// look for colour change
 		}
 		float angle1=Math.abs(pilot.getAngleIncrement());// note angle1
+		lejos.util.Delay.msDelay(500);//allow time to get past change
 		while (light.getColorID() == Color.RED)
 		{// look for colour change
 		}
+		lejos.util.Delay.msDelay(500);//allow time to get past change
 		while (light.getColorID() == Color.BLUE)
 		{// look for colour change
 		}

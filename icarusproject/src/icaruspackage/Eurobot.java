@@ -88,7 +88,7 @@ abstract public class Eurobot {
 				//LCD.drawInt(light.getColorID(),0,2);
 				if(sonic.getDistance() < AVOIDANCE_THRESHOLD){
 					// obstacle detected - stop the robot
-					//LCD.drawString("STOP!",0,3);
+					LCD.drawString("STOP!",0,3);
 					// warning beep:
 					int v=Sound.getVolume();// get current volume
 					Sound.setVolume(100);// change volume to max
@@ -99,7 +99,7 @@ abstract public class Eurobot {
 
 				} else if(sonic.getDistance() >= AVOIDANCE_THRESHOLD) {
 					// no obstacle - carry on
-					//LCD.drawString("GO!  ",0,3);
+					LCD.drawString("GO!  ",0,3);
 					pilot.setTravelSpeed(FAST);
 					pilot.setRotateSpeed(FAST*Math.PI*WHEEL_BASE/180.0f);
 				}
