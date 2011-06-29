@@ -31,6 +31,9 @@ abstract public class Eurobot {
 	final int rotateSpeed = 30;
 	final int MAX_ACCELERATION = 6000;
 	final int MIN_ACCELERATION = 1000;
+	
+	/** Other variables for state **/
+	boolean obstacle = false;
 
 
 	/** Robot Hardware **/
@@ -84,7 +87,8 @@ abstract public class Eurobot {
 		TimerListener tl = new TimerListener()
 		{		   
 			public void timedOut(){
-				if(sonic.getDistance() < AVOIDANCE_THRESHOLD){
+				if(!obstacle && sonic.getDistance() < AVOIDANCE_THRESHOLD){
+					obstacle = true;
 					// warning beep:
 					int v=Sound.getVolume();// get current volume
 					Sound.setVolume(100);// change volume to max
@@ -92,7 +96,8 @@ abstract public class Eurobot {
 					Sound.setVolume(v);// reset master volume
 					setSpeed(0);
 
-				} else if(sonic.getDistance() >= AVOIDANCE_THRESHOLD) {
+				} else if(obstacle && sonic.getDistance() >= AVOIDANCE_THRESHOLD) {
+					obstacle = false;
 					setSpeed(FAST);
 				}
 			}   
@@ -129,13 +134,46 @@ abstract public class Eurobot {
 		Timer timer = new Timer(MATCH_LENGTH,tl);	
 		return timer;
 	}
+	
+	/**
+	 * Stops the robots motors with an optional acceleration value
+	 * If no value given, the stop is instant
+	 */
+	void stop() {
+		stop(MAX_ACCELERATION);
+	}
+	
+	void stop(int accel) {
+		pilot.setAcceleration(accel);
+		pilot.stop();
+	}
+	
+	/**
+	 * Wrapper for the pilot.setTravel incorporating optional acceleration.
+	 * Optional acceleration defaults to MIN_ACCELERATION
+	 * @param distance in cm
+	 * @param immret true for non-blocking operation
+	 */
+	void travel(double distance, boolean immret) {
+		travel(distance, immret, MIN_ACCELERATION);
+	}
+	void travel(double distance, boolean immret, int accel) {
+		pilot.setAcceleration(accel);
+		pilot.travel(distance, immret);
+	}
+	
+	void rotate(double angle) {
+		rotate(angle, MIN_ACCELERATION);
+	}
+	void rotate(double angle, int accel) {
+		pilot.setAcceleration(accel);
+		pilot.rotate(angle);
+	}
 
 	void waitForPawn(){
-		pilot.setAcceleration(MAX_ACCELERATION);// allow quick stop
 		while (pilot.isMoving()) {
-			if (pawnButton.isPressed()) pilot.stop(); //Found a pawn!
+			if (pawnButton.isPressed()) stop(); //Found a pawn!
 		}
-		pilot.setAcceleration(MIN_ACCELERATION);// reset acceleration
 	}
 
 

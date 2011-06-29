@@ -17,7 +17,7 @@ public class TwoPawnBot extends Eurobot {
 	@Override
 	public void initialize() {
 		LCD.drawString("2-Pawn Bot", 0, 0);
-		setSpeed(FAST);
+		setSpeed(FAST);	
 		pilot.setAcceleration(MIN_ACCELERATION);//(default/max is 6000)
 
 		stopwatch.reset();
@@ -52,22 +52,21 @@ public class TwoPawnBot extends Eurobot {
 
 		// Move out of the starting box
 		LCD.drawString("Move from box          ", 0, 4);
-		pilot.travel(100,true);
+		travel(100, true, MIN_ACCELERATION);
 		while (light.getColorID() == startColor)
 		{// look for colour change
 		}
-		pilot.setAcceleration(MAX_ACCELERATION);// stop quickly
-		pilot.travel(5,false);// move extra amount past colour change
-		pilot.setAcceleration(MIN_ACCELERATION);// reset acceleration
+		travel(5,false, MAX_ACCELERATION);// move extra amount past colour change
 
 		// Turn onto the first line
 		LCD.drawString("Turn to 1st line          ", 0, 4);
+		pilot.setAcceleration(MIN_ACCELERATION);
 		pilot.arc(dir*20.0f,dir*90.0f);
 
 		// Drive forwards until you find a pawn (max 3 squares)
 		LCD.drawString("Seek pawn1          ", 0, 4);
 		pilot.reset();
-		pilot.travel(106, true);
+		travel(106, true);
 		waitForPawn();
 
 		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
@@ -78,58 +77,56 @@ public class TwoPawnBot extends Eurobot {
 			distanceDownBoard = distanceDownBoard + 20;
 		}	
 		// Move back 1 square
-		pilot.rotate(180); 
-		pilot.travel(travelDistance);
-		pilot.travel(-35);
-		pilot.rotate(-180);
+		rotate(180); 
+		travel(travelDistance, false);
+		travel(-35, false);
+		rotate(-180);
 		LCD.drawString("Seek pawn2          ", 0, 4);
 
 		// move to | + + + + * | collecting 2nd pawn on the way
 		pilot.reset();
-		pilot.travel(140-distanceDownBoard, false);// was (105-distanceDownBoard, true);
+		travel(140-distanceDownBoard, false);
 		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
 
 		// Place 2nd pawn in protected area:
 		// turn 90 and move until colour changes to BLUE
 		LCD.drawString("Place pawn2          ", 0, 4);
 
-		pilot.rotate(dir*90);
+		rotate(dir*90);
 		setSpeed(SLOW);// do this slowly...
-		pilot.travel(20,true);
+		travel(20,true);
 		while (light.getColorID() == Color.RED)
 		{// look for colour change
 		}
-		pilot.setAcceleration(MAX_ACCELERATION);// stop quickly
-		pilot.stop();
+		stop();
 		//pilot.travel(5,false);// move extra amount past colour change if needed
-		pilot.setAcceleration(MIN_ACCELERATION);// reset acceleration
 		setSpeed(FAST);// ok to go quickly again...
 		// turn and push the pawn into the protected square
-		pilot.rotate(dir*-90);
-		pilot.travel(15);
+		rotate(dir*-90);
+		travel(15, false);
 
 		// reverse back to horiz4
-		pilot.travel(-48);// was (distanceDownBoard-150);
-		pilot.rotate(dir*90);
+		travel(-48, false);// was (distanceDownBoard-150);
+		rotate(dir*90);
 
 		// FIND VERT1 **************************
 		LCD.drawString("Find vert1          ", 0, 4);
 		if(light.getColorID() == Color.RED){
 			// reverse back to vert1
-			pilot.travel(-20, true);
+			travel(-20, true);
 			while (light.getColorID() == Color.RED)
 			{// look for colour change
 			}
-			pilot.stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
-			pilot.travel(-5);// move a little bit to line up with vert1
+			stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
+			travel(-5, false);// move a little bit to line up with vert1
 		} else {
 			// find vert1
-			pilot.travel(20, true);
+			travel(20, true);
 			while (light.getColorID() != Color.RED)
 			{// look for colour change
 			}
-			pilot.stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
-			pilot.travel(-10);// move a little bit to line up with vert1
+			stop();// DO WE NEED THIS? POSSIBLY THE NEXT COMMAND CANCELS THE PREVIOUS MOVEMENT...
+			travel(-10, false);// move a little bit to line up with vert1
 		}
 
 		// RE-ORIENT *****************************
@@ -160,7 +157,7 @@ public class TwoPawnBot extends Eurobot {
 		// we are now  here: | + + + * + |
 
 		LCD.drawString("Go home          ", 0, 4);
-		pilot.travel(125); 
+		travel(125, false); 
 		// we are now  here: |*+ + + + + |
 
 		/*
@@ -176,8 +173,8 @@ public class TwoPawnBot extends Eurobot {
 		pilot.travel(distanceDownBoard + 22.0f);	
 		 */
 
-		pilot.rotate(-90*dir);
-		pilot.travel(60, true);
+		rotate(-90*dir);
+		travel(60, true);
 
 		// Go past black
 		int n = 0;
@@ -187,8 +184,7 @@ public class TwoPawnBot extends Eurobot {
 			lejos.util.Delay.msDelay(100);
 		} while(n < 2 && pilot.isMoving());
 
-		//pilot.setAcceleration(MAX_ACCELERATION);// stop quickly
-		pilot.stop();
+		stop();
 
 		/*// took this next bit out to avoid jerky stop...
 		// BUT... IF THE NEXT MOVEMENT CANCELS THE PREVIOUS ONE, remove pilot.stop()
@@ -206,55 +202,11 @@ public class TwoPawnBot extends Eurobot {
 			lejos.util.Delay.msDelay(4000);
 			footUp();
 			setSpeed(FAST);
-			pilot.rotate(180);
+			rotate(180);
 		} else {
 			lejos.util.Delay.msDelay(9000);//LONG WAIT, TO AVOID SAGGING BACK DOWN
 			NXT.shutDown();
 		}
-
-		// move forward to 1st position
-		// arc +90 R150 (on one wheel)
-		// if pawn detected {
-		// 		rotate +180
-		//		move forward 150mm (with pawn)
-		//		rotate -90
-		//		move forward 350mm (with pawn)
-		//		move backward 350mm
-		//		rotate -90
-		// } else {
-		//		move forward X to first pawn (max 3 squares)
-		//		rotate +180
-		//		move forward 350mm (with pawn)
-		//		move backward 350mm
-		//		rotate +180
-		// }
-		// move forward to 2nd pawn (max ... squares)
-		// rotate +90
-		// move forward 150mm (with pawn)
-		// rotate -90
-		// move forward to safe square (with pawn) (2nd pawn is now in place)
-		// move backward 450mm
-		// rotate -90
-		// move forward 500mm
-		// if no pawn detected {
-		//		rotate -90
-		//		move forward X until we hit a pawn (max 3 squares)
-		//		rotate +180
-		//		move forward X+50 (with pawn)
-		//		rotate -90
-		// } else {
-		//		rotate 90
-		//		move forward 50mm
-		//		rotate -90
-		// }
-		// arc +135 R300 (with pawn) (3rd pawn is now in place)
-		// arc -135 R300 in reverse
-		// move 350mm backward
-		// rotate -90
-		// move forward 1200mm
-		// rotate -90
-		// move forward 600mm (1st pawn is now in place
-		// lift up!
 	}
 
 
