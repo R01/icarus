@@ -19,7 +19,7 @@ public class TwoPawnBot extends Eurobot {
 		LCD.drawString("2-Pawn Bot", 0, 0);
 		pilot.setTravelSpeed(FAST);
 		// NOTE: for some reason rotating is SSLLOOWW, so now set to 8*
-		pilot.setRotateSpeed(8*rotateSpeed*Math.PI*WHEEL_BASE/180.0f); // degrees/sec#
+		pilot.setRotateSpeed(FAST/(WHEEL_BASE*Math.PI)*360.0f); // degrees/sec#
 		pilot.setAcceleration(MIN_ACCELERATION);//(default/max is 6000)
 
 		//TODO: FIX THIS  
