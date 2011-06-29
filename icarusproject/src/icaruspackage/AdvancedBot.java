@@ -1,6 +1,5 @@
 package icaruspackage;
 
-import IckyDevices.CompassOdomPoseProvider;
 import lejos.nxt.ColorSensor;
 import lejos.nxt.ColorSensor.Color;
 import lejos.nxt.LCD;

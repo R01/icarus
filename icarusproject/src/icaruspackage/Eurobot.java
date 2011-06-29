@@ -5,6 +5,7 @@ import lejos.nxt.addon.CompassSensor;
 import lejos.nxt.addon.TouchMUX;
 import lejos.robotics.Touch;
 import lejos.robotics.navigation.DifferentialPilot;
+import lejos.robotics.navigation.Move.MoveType;
 import lejos.util.Stopwatch;
 import lejos.util.Timer;
 import lejos.util.TimerListener;
@@ -19,7 +20,7 @@ import lejos.util.TimerListener;
 abstract public class Eurobot {
 
 	/** Measured constants you probably shouldn't change **/
-	final int MATCH_LENGTH = 90000; // milliseconds
+	final int MATCH_LENGTH = 95000; // milliseconds
 	final float WHEEL_DIAMETER = 8.0f;// cm
 	final float WHEEL_BASE = 30.5f;// cm
 	boolean competition = false;
@@ -31,9 +32,11 @@ abstract public class Eurobot {
 	final int rotateSpeed = 30;
 	final int MAX_ACCELERATION = 6000;
 	final int MIN_ACCELERATION = 1000;
-	
+
 	/** Other variables for state **/
 	boolean obstacle = false;
+	double currentGoal = 0.0;
+	double distanceTravelled = 0.0;
 
 
 	/** Robot Hardware **/
@@ -47,7 +50,7 @@ abstract public class Eurobot {
 			Motor.B, Motor.C, true);
 	CompassSensor compass = new CompassSensor(SensorPort.S2);// I2C sensor (address 2)
 	Stopwatch stopwatch = new Stopwatch();// a timer for debugging
-	
+
 	/**
 	 * Contains the initialization logic of the robot
 	 */
@@ -88,24 +91,25 @@ abstract public class Eurobot {
 		{		   
 			public void timedOut(){
 				if(!obstacle && sonic.getDistance() < AVOIDANCE_THRESHOLD){
-					obstacle = true;
-					LCD.drawString("STOP!", 0, 3);
-					// warning beep:
-					int v=Sound.getVolume();// get current volume
-					Sound.setVolume(100);// change volume to max
-					Sound.systemSound(false,1);
-					Sound.setVolume(v);// reset master volume
-					
-					pilot.setAcceleration(MAX_ACCELERATION);
-					//pilot.stop();
-					//NXT.shutDown();
-					setSpeed(0);
+					MoveType type = pilot.getMovement().getMoveType();
+					if(type==MoveType.ARC || type==MoveType.TRAVEL){
+						obstacle = true;
+						LCD.drawString("STOP!", 0, 3);
+						// warning beep:
+						int v=Sound.getVolume();// get current volume
+						Sound.setVolume(100);// change volume to max
+						Sound.systemSound(false,1);
+						Sound.setVolume(v);// reset master volume
+						distanceTravelled = pilot.getMovement().getDistanceTraveled();
+						stop();
+					}
+
 
 				} else if(obstacle && sonic.getDistance() >= AVOIDANCE_THRESHOLD) {
-					obstacle = false;
 					LCD.drawString("GO!    ", 0, 3);
-					setSpeed(FAST);
-					
+					//setSpeed(FAST);
+					travel(currentGoal - distanceTravelled, true);
+					obstacle = false;
 				}
 			}   
 		};
@@ -113,7 +117,7 @@ abstract public class Eurobot {
 		Timer timer = new Timer(100,tl);	   
 		timer.start();
 	}
-	
+
 	/**
 	 * Sets the speed of the robots motors (rotate and travel)
 	 * @param speed speed in cm/s
@@ -141,7 +145,7 @@ abstract public class Eurobot {
 		Timer timer = new Timer(MATCH_LENGTH,tl);	
 		return timer;
 	}
-	
+
 	/**
 	 * Stops the robots motors with an optional acceleration value
 	 * If no value given, the stop is instant
@@ -149,12 +153,12 @@ abstract public class Eurobot {
 	public void stop() {
 		stop(MAX_ACCELERATION);
 	}
-	
+
 	public void stop(int accel) {
 		pilot.setAcceleration(accel);
 		pilot.stop();
 	}
-	
+
 	/**
 	 * Wrapper for the pilot.setTravel incorporating optional acceleration.
 	 * Optional acceleration defaults to MIN_ACCELERATION
@@ -162,25 +166,29 @@ abstract public class Eurobot {
 	 * @param immret true for non-blocking operation
 	 */
 	public void travel(double distance, boolean immret) {
-		travel(distance, immret, MIN_ACCELERATION);
+		travel(distance, true, MIN_ACCELERATION);
+		if(!immret){
+			while(pilot.isMoving() || obstacle){
+				// keep looping
+			}
+		}
 	}
 	public void travel(double distance, boolean immret, int accel) {
-		while(obstacle);
+		currentGoal = distance;
 		pilot.setAcceleration(accel);
 		pilot.travel(distance, immret);
 	}
-	
+
 	public void rotate(double angle) {
 		rotate(angle, MIN_ACCELERATION);
 	}
 	public void rotate(double angle, int accel) {
-		while(obstacle);
 		pilot.setAcceleration(accel);
 		pilot.rotate(angle);
 	}
 
 	public void waitForPawn(){
-		while (pilot.isMoving()) {
+		while (pilot.isMoving() || obstacle) {
 			if (pawnButton.isPressed()) stop(); //Found a pawn!
 		}
 	}
@@ -219,14 +227,14 @@ abstract public class Eurobot {
 		//... and forward again a tiny bit to prevent coasting
 		Motor.A.rotate(1); 
 	}
-	
+
 	// convert to radians
 	double radians(double d) {
 		return d*Math.PI/180.0;
 	}
 
 	// convert to radians
-	 double degrees(double r) {
+	double degrees(double r) {
 		return r*180.0/Math.PI;
 	}
 

@@ -86,7 +86,7 @@ public class TwoPawnBot extends Eurobot {
 		// move to | + + + + * | collecting 2nd pawn on the way
 		pilot.reset();
 		travel(140-distanceDownBoard, false);
-		distanceDownBoard += pilot.getMovement().getDistanceTraveled();
+		//distanceDownBoard += pilot.getMovement().getDistanceTraveled();
 
 		// Place 2nd pawn in protected area:
 		// turn 90 and move until colour changes to BLUE
@@ -206,7 +206,7 @@ public class TwoPawnBot extends Eurobot {
 			setSpeed(FAST);
 			rotate(180);
 		} else {
-			lejos.util.Delay.msDelay(9000);//LONG WAIT, TO AVOID SAGGING BACK DOWN
+			lejos.util.Delay.msDelay(90000);//LONG WAIT, TO AVOID SAGGING BACK DOWN
 			NXT.shutDown();
 		}
 	}
