@@ -25,7 +25,7 @@ abstract public class Eurobot {
 	boolean competition = false;
 
 	/** Trial and error constants you can play with **/
-	final int AVOIDANCE_THRESHOLD = 13; // cm
+	final int AVOIDANCE_THRESHOLD = 18; // cm
 	final int FAST = 25; // cm/sec (15 is slow but accurate, 30 is nearly too fast)
 	final int SLOW = 8;
 	final int rotateSpeed = 30;
@@ -89,21 +89,28 @@ abstract public class Eurobot {
 			public void timedOut(){
 				if(!obstacle && sonic.getDistance() < AVOIDANCE_THRESHOLD){
 					obstacle = true;
+					LCD.drawString("STOP!", 0, 3);
 					// warning beep:
 					int v=Sound.getVolume();// get current volume
 					Sound.setVolume(100);// change volume to max
 					Sound.systemSound(false,1);
 					Sound.setVolume(v);// reset master volume
+					
+					pilot.setAcceleration(MAX_ACCELERATION);
+					//pilot.stop();
+					//NXT.shutDown();
 					setSpeed(0);
 
 				} else if(obstacle && sonic.getDistance() >= AVOIDANCE_THRESHOLD) {
 					obstacle = false;
+					LCD.drawString("GO!    ", 0, 3);
 					setSpeed(FAST);
+					
 				}
 			}   
 		};
 		// set this timer event to fire every 500ms
-		Timer timer = new Timer(500,tl);	   
+		Timer timer = new Timer(100,tl);	   
 		timer.start();
 	}
 	
@@ -113,7 +120,7 @@ abstract public class Eurobot {
 	 */
 	public void setSpeed(double speed) {
 		pilot.setTravelSpeed(speed);
-		pilot.setRotateSpeed(speed*Math.PI*WHEEL_BASE/180.0f);
+		pilot.setRotateSpeed(speed/(WHEEL_BASE*Math.PI)*360.0f);
 	}
 
 	/**
@@ -139,11 +146,11 @@ abstract public class Eurobot {
 	 * Stops the robots motors with an optional acceleration value
 	 * If no value given, the stop is instant
 	 */
-	void stop() {
+	public void stop() {
 		stop(MAX_ACCELERATION);
 	}
 	
-	void stop(int accel) {
+	public void stop(int accel) {
 		pilot.setAcceleration(accel);
 		pilot.stop();
 	}
@@ -154,23 +161,25 @@ abstract public class Eurobot {
 	 * @param distance in cm
 	 * @param immret true for non-blocking operation
 	 */
-	void travel(double distance, boolean immret) {
+	public void travel(double distance, boolean immret) {
 		travel(distance, immret, MIN_ACCELERATION);
 	}
-	void travel(double distance, boolean immret, int accel) {
+	public void travel(double distance, boolean immret, int accel) {
+		while(obstacle);
 		pilot.setAcceleration(accel);
 		pilot.travel(distance, immret);
 	}
 	
-	void rotate(double angle) {
+	public void rotate(double angle) {
 		rotate(angle, MIN_ACCELERATION);
 	}
-	void rotate(double angle, int accel) {
+	public void rotate(double angle, int accel) {
+		while(obstacle);
 		pilot.setAcceleration(accel);
 		pilot.rotate(angle);
 	}
 
-	void waitForPawn(){
+	public void waitForPawn(){
 		while (pilot.isMoving()) {
 			if (pawnButton.isPressed()) stop(); //Found a pawn!
 		}

@@ -23,7 +23,7 @@ public class TwoPawnBot extends Eurobot {
 		stopwatch.reset();
 		registerStopButtonInterrupt();
 		Timer matchTimer = initMatchTimer();
-		//startSonicAvoidanceThread();
+		startSonicAvoidanceThread();
 		footUp(); // Just in case!
 
 		// wait for start signal:
