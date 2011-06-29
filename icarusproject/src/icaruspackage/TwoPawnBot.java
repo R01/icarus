@@ -17,12 +17,9 @@ public class TwoPawnBot extends Eurobot {
 	@Override
 	public void initialize() {
 		LCD.drawString("2-Pawn Bot", 0, 0);
-		pilot.setTravelSpeed(FAST);
-		// NOTE: for some reason rotating is SSLLOOWW, so now set to 8*
-		pilot.setRotateSpeed(FAST/(WHEEL_BASE*Math.PI)*360.0f); // degrees/sec#
+		setSpeed(FAST);
 		pilot.setAcceleration(MIN_ACCELERATION);//(default/max is 6000)
 
-		//TODO: FIX THIS  
 		stopwatch.reset();
 		registerStopButtonInterrupt();
 		Timer matchTimer = initMatchTimer();
@@ -97,7 +94,7 @@ public class TwoPawnBot extends Eurobot {
 		LCD.drawString("Place pawn2          ", 0, 4);
 
 		pilot.rotate(dir*90);
-		pilot.setTravelSpeed(SLOW);// do this slowly...
+		setSpeed(SLOW);// do this slowly...
 		pilot.travel(20,true);
 		while (light.getColorID() == Color.RED)
 		{// look for colour change
@@ -106,7 +103,7 @@ public class TwoPawnBot extends Eurobot {
 		pilot.stop();
 		//pilot.travel(5,false);// move extra amount past colour change if needed
 		pilot.setAcceleration(MIN_ACCELERATION);// reset acceleration
-		pilot.setTravelSpeed(FAST);// ok to go quickly again...
+		setSpeed(FAST);// ok to go quickly again...
 		// turn and push the pawn into the protected square
 		pilot.rotate(dir*-90);
 		pilot.travel(15);
@@ -208,7 +205,7 @@ public class TwoPawnBot extends Eurobot {
 		if(!competition) {
 			lejos.util.Delay.msDelay(4000);
 			footUp();
-			pilot.setTravelSpeed(FAST);
+			setSpeed(FAST);
 			pilot.rotate(180);
 		} else {
 			lejos.util.Delay.msDelay(9000);//LONG WAIT, TO AVOID SAGGING BACK DOWN

@@ -44,6 +44,7 @@ abstract public class Eurobot {
 			Motor.B, Motor.C, true);
 	CompassSensor compass = new CompassSensor(SensorPort.S2);// I2C sensor (address 2)
 	Stopwatch stopwatch = new Stopwatch();// a timer for debugging
+	
 	/**
 	 * Contains the initialization logic of the robot
 	 */
@@ -83,31 +84,31 @@ abstract public class Eurobot {
 		TimerListener tl = new TimerListener()
 		{		   
 			public void timedOut(){
-				//LCD.drawString(" "+speed+"   ",6,1);//track speed
-				//LCD.drawString("    ",0,2);//clear old colour value
-				//LCD.drawInt(light.getColorID(),0,2);
 				if(sonic.getDistance() < AVOIDANCE_THRESHOLD){
-					// obstacle detected - stop the robot
-					//LCD.drawString("STOP!",0,3);
 					// warning beep:
 					int v=Sound.getVolume();// get current volume
 					Sound.setVolume(100);// change volume to max
 					Sound.systemSound(false,1);
 					Sound.setVolume(v);// reset master volume
-					pilot.setTravelSpeed(0);
-					pilot.setRotateSpeed(0);
+					setSpeed(0);
 
 				} else if(sonic.getDistance() >= AVOIDANCE_THRESHOLD) {
-					// no obstacle - carry on
-					//LCD.drawString("GO!  ",0,3);
-					pilot.setTravelSpeed(FAST);
-					pilot.setRotateSpeed(FAST*Math.PI*WHEEL_BASE/180.0f);
+					setSpeed(FAST);
 				}
 			}   
 		};
 		// set this timer event to fire every 500ms
 		Timer timer = new Timer(500,tl);	   
 		timer.start();
+	}
+	
+	/**
+	 * Sets the speed of the robots motors (rotate and travel)
+	 * @param speed speed in cm/s
+	 */
+	public void setSpeed(double speed) {
+		pilot.setTravelSpeed(speed);
+		pilot.setRotateSpeed(speed*Math.PI*WHEEL_BASE/180.0f);
 	}
 
 	/**
